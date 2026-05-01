@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commande Confirmée - SILIA</title>
+  <style>
+    :root {
+      --bg-color: #fafafa;
+      --text-color: #1a1a1a;
+      --offer-highlight: #ff4d4f;
+      --success-green: #4caf50;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    .success-container {
+      background: #fff;
+      border-radius: 35px;
+      padding: 50px 40px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.04);
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      transform: translateY(30px);
+      position: relative;
+      z-index: 10;
+    }
+
+    @keyframes slideUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .check-icon {
+      width: 80px;
+      height: 80px;
+      background: rgba(76, 175, 80, 0.1);
+      color: var(--success-green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto 25px auto;
+      box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+      70% { box-shadow: 0 0 0 20px rgba(76, 175, 80, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+    }
+
+    h1 { margin: 0 0 10px 0; font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+    p { margin: 0 0 30px 0; color: #666; font-size: 1.05rem; line-height: 1.5; }
+
+    .order-box {
+      background: #fdfdfd;
+      border: 1px dashed #e0e0e0;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .order-box span { display: block; font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+    .order-box strong { font-size: 1.5rem; color: #111; letter-spacing: 0.05em; font-family: monospace; }
+
+    .btn-action {
+      display: block; width: 100%; padding: 18px; border-radius: 30px;
+      font-size: 1.05rem; font-weight: 600; text-decoration: none;
+      transition: all 0.3s; margin-bottom: 15px; box-sizing: border-box; border: none; cursor: pointer;
+    }
+
+    .btn-home { background: #111; color: #fff; }
+    .btn-home:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+
+    .btn-whatsapp { 
+      background: #25D366; color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-whatsapp:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3); background: #22c35e; }
+    .btn-whatsapp svg { width: 22px; height: 22px; fill: currentColor; }
+
+    /* Floating particles background */
+    .bg-shape {
+      position: absolute; border-radius: 50%; filter: blur(80px); z-index: 1; opacity: 0.5;
+    }
+    .shape1 { width: 400px; height: 400px; background: rgba(255, 77, 79, 0.1); top: -100px; left: -100px; }
+    .shape2 { width: 300px; height: 300px; background: rgba(76, 175, 80, 0.1); bottom: -50px; right: -50px; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-shape shape1"></div>
+  <div class="bg-shape shape2"></div>
+
+  <div class="success-container">
+    <div class="check-icon">✓</div>
+    <h1>Commande Confirmée !</h1>
+    <p>Merci d'avoir choisi SILIA. Vos produits de beauté haut de gamme sont en cours de préparation pour la livraison.</p>
+
+    <div class="order-box">
+      <span>Votre Numéro de Commande</span>
+      <strong id="orderIdDisplay">ORD-XXXXXX</strong>
+    </div>
+
+    <a href="index.html" class="btn-action btn-home">Continuer vos achats</a>
+    <a href="#" id="whatsappBtn" class="btn-action btn-whatsapp" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M12.031 0C5.383 0 0 5.383 0 12.031c0 2.12.553 4.195 1.604 6.012L.031 24l6.105-1.604A11.96 11.96 0 0 0 12.031 24c6.648 0 12.031-5.383 12.031-12.031C24.062 5.383 18.679 0 12.031 0zm0 22.008c-1.846 0-3.654-.497-5.234-1.436l-.375-.221-3.89.102 1.05-3.79-.244-.388C2.392 14.697 1.884 12.87 1.884 12.03c0-5.597 4.55-10.146 10.147-10.146 5.597 0 10.147 4.55 10.147 10.146 0 5.596-4.55 10.147-10.147 10.147zm5.556-7.585c-.305-.152-1.802-.888-2.08-.99-.278-.101-.482-.152-.685.152-.203.304-.787.99-.965 1.192-.178.203-.356.228-.66.076-1.554-.766-2.696-1.428-3.743-3.237-.213-.37-.024-.567.126-.719.135-.136.305-.355.457-.533.152-.177.203-.304.305-.507.101-.203.05-.38-.025-.533-.076-.152-.685-1.65-.94-2.259-.247-.59-.497-.508-.685-.518-.178-.01-.38-.01-.584-.01-.203 0-.533.076-.812.38-.279.305-1.066 1.04-1.066 2.538 0 1.498 1.092 2.945 1.244 3.148.152.203 2.146 3.276 5.197 4.593 1.956.845 2.76.94 3.75 1.002 1.037.063 2.802-.457 3.32-1.396.518-.94.518-1.748.366-1.916-.152-.168-.559-.269-.864-.421z"/></svg>
+      Contacter le support
+    </a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Get Order ID from URL if available, otherwise generate fallback
+      const params = new URLSearchParams(window.location.search);
+      const orderId = params.get('id') || 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+      document.getElementById('orderIdDisplay').textContent = orderId;
+
+      // WhatsApp link format
+      const waNumber = '212707000008';
+      const waMessage = encodeURIComponent(`Bonjour le support SILIA, j'ai une question concernant ma récente commande : ${orderId}`);
+      const waLink = `https://wa.me/${waNumber}?text=${waMessage}`;
+      
+      document.getElementById('whatsappBtn').href = waLink;
+    });
+  </script>
+</body>
+</html>

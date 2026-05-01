@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paiement - SILIA Cosmetics</title>
+  <meta property="og:title" content="Paiement - SILIA Cosmetics">
+  <meta property="og:description" content="Finalisez votre commande de produits de beauté haut de gamme SILIA.">
+  <meta property="og:image" content="https://e-silia.github.io/SILIA/assets/img/share_image.jpg">
+  <meta property="og:url" content="https://e-silia.github.io/SILIA/checkout.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <style>
+    /* Premium CSS Variables */
+    :root {
+      --bg-color: #fafafa;
+      --text-color: #1a1a1a;
+      --glass-bg: rgba(255, 255, 255, 0.8);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --offer-highlight: #ff4d4f;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* Header (Simple) */
+    .header {
+      padding: 20px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .logo img { height: 35px; mix-blend-mode: multiply; }
+    .back-btn { text-decoration: none; color: #666; font-weight: 500; font-size: 0.95rem; }
+    .back-btn:hover { color: #111; }
+
+    /* Layout Container */
+    .checkout-container {
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 0 5%;
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+
+    /* Left Form Area */
+    .checkout-form {
+      flex: 1.5;
+    }
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 30px;
+      letter-spacing: -0.02em;
+    }
+    
+    /* Bento Box Form Groups */
+    .form-group {
+      background: #fff;
+      border-radius: 25px;
+      padding: 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+    .form-group h3 { margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; }
+
+    .input-row { display: flex; gap: 15px; margin-bottom: 15px; }
+    .input-col { flex: 1; }
+    
+    label { display: block; font-size: 0.85rem; color: #666; margin-bottom: 8px; font-weight: 500; }
+    input[type="text"], input[type="email"] {
+      width: 100%;
+      padding: 15px 18px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      font-size: 1rem;
+      background: #fdfdfd;
+      transition: all 0.3s;
+      box-sizing: border-box;
+    }
+    input[type="text"]:focus, input[type="email"]:focus {
+      outline: none;
+      border-color: var(--offer-highlight);
+      box-shadow: 0 0 0 4px rgba(255, 77, 79, 0.1);
+    }
+
+    /* Custom Dropdown */
+    .custom-dropdown {
+      position: relative; width: 100%;
+    }
+    .dropdown-header {
+      padding: 15px 18px; border-radius: 12px; border: 1px solid #e0e0e0;
+      background: #fdfdfd; font-size: 1rem; cursor: pointer; display: flex;
+      justify-content: space-between; align-items: center; color: #666;
+    }
+    .dropdown-header.active { border-color: var(--offer-highlight); }
+    .dropdown-header span { font-size: 0.8rem; }
+    .dropdown-body {
+      position: absolute; top: calc(100% + 5px); left: 0; width: 100%;
+      background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      border: 1px solid rgba(0,0,0,0.05); z-index: 100; opacity: 0; visibility: hidden;
+      transform: translateY(-10px); transition: all 0.2s; overflow: hidden;
+    }
+    .dropdown-body.show { opacity: 1; visibility: visible; transform: translateY(0); }
+    .dropdown-search {
+      width: 100%; border: none !important; border-bottom: 1px solid #eee !important;
+      border-radius: 0 !important; padding: 15px !important; box-shadow: none !important;
+    }
+    .dropdown-list {
+      list-style: none; margin: 0; padding: 0; max-height: 200px; overflow-y: auto;
+    }
+    .dropdown-list li {
+      padding: 12px 18px; cursor: pointer; font-size: 0.95rem; border-bottom: 1px solid #fafafa; transition: background 0.2s;
+    }
+    .dropdown-list li:hover { background: #fff5f5; color: var(--offer-highlight); }
+
+    /* Right Order Summary */
+    .order-summary {
+      flex: 1;
+      background: #fff;
+      border-radius: 30px;
+      padding: 35px;
+      position: sticky;
+      top: 30px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+    .order-summary h3 { margin-top: 0; margin-bottom: 25px; font-size: 1.4rem; }
+
+    .summary-item { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; }
+    .summary-img { width: 70px; height: 70px; border-radius: 15px; object-fit: cover; }
+    .summary-info { flex: 1; }
+    .summary-info h4 { margin: 0 0 5px 0; font-size: 1rem; }
+    .summary-info p { margin: 0; color: #888; font-size: 0.9rem; }
+    .summary-price { font-weight: 600; }
+
+    .pricing-totals {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px dashed #e0e0e0;
+    }
+    .pricing-row {
+      display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1rem; color: #555;
+    }
+    .pricing-row.discount { color: #388e3c; } /* Green for discount */
+    .pricing-row.total {
+      font-size: 1.4rem; font-weight: 700; color: #111; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;
+    }
+
+    .btn-pay {
+      width: 100%;
+      background: #111;
+      color: #fff;
+      border: none;
+      padding: 18px;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 30px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-pay:hover {
+      background: var(--offer-highlight);
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(255, 77, 79, 0.2);
+    }
+
+
+    /* Phone Input */
+    .phone-input-group {
+      display: flex; align-items: stretch; width: 100%;
+      border-radius: 12px; border: 1px solid #e0e0e0;
+      background: #fdfdfd; transition: all 0.3s;
+      overflow: hidden;
+    }
+    .phone-input-group:focus-within {
+      border-color: var(--offer-highlight);
+      box-shadow: 0 0 0 4px rgba(255, 77, 79, 0.1);
+    }
+    .phone-prefix {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 15px; background: #f5f5f7;
+      border-right: 1px solid #e0e0e0; font-weight: 600;
+      font-size: 0.95rem; color: #333;
+    }
+    .phone-input-group input[type="tel"] {
+      flex: 1; border: none; outline: none; background: transparent;
+      padding: 15px; font-size: 1rem; width: 100%;
+    }
+    .phone-input-group input[type="tel"]:focus {
+      box-shadow: none; border: none;
+    }
+
+    .empty-cart-msg {
+      text-align: center; color: #888; padding: 40px 0;
+    }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .checkout-container {
+        flex-direction: column;
+        margin: 20px auto;
+        padding: 0 4%;
+        gap: 20px;
+      }
+      .checkout-form, .order-summary {
+        width: 100%;
+        box-sizing: border-box;
+        flex: auto;
+      }
+      .order-summary {
+        position: static;
+        margin-bottom: 30px;
+        padding: 25px 20px;
+        border-radius: 20px;
+      }
+      .form-group {
+        padding: 20px;
+        border-radius: 18px;
+      }
+      .input-row {
+        flex-direction: column;
+        gap: 0;
+      }
+      .input-col { margin-bottom: 15px; }
+      .section-title { font-size: 1.5rem; }
+      .summary-img { width: 55px; height: 55px; }
+      .btn-pay { padding: 16px; font-size: 1rem; }
+      .header { padding: 15px 4%; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabaseClient.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <a href="index.html" class="logo"><img src="assets/img/logo.png" alt="Silia Logo"></a>
+    <a href="index.html" class="back-btn">← Retour à la boutique</a>
+  </header>
+
+  <!-- Checkout Container -->
+  <div class="checkout-container">
+    
+    <!-- Form Area -->
+    <div class="checkout-form">
+      <h1 class="section-title">Paiement Sécurisé</h1>
+      
+      <div class="form-group">
+        <h3>Informations de Contact</h3>
+        <label>Numéro de téléphone</label>
+        <div class="phone-input-group">
+          <div class="phone-prefix">
+            <img src="https://flagcdn.com/w20/ma.png" alt="MA" style="width:20px; border-radius:2px;">
+            +212
+          </div>
+          <input type="tel" placeholder="6 XX XX XX XX" maxlength="15">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <h3>Adresse de Livraison</h3>
+        <div class="input-row">
+          <div class="input-col">
+            <label>Nom complet</label>
+            <input type="text" id="fullName" placeholder="Votre nom complet">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-col">
+            <label>Adresse complète</label>
+            <input type="text" placeholder="Votre adresse">
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-col">
+            <label>Ville</label>
+            <div class="custom-dropdown" id="cityDropdown">
+              <div class="dropdown-header" onclick="toggleDropdown()">Sélectionnez une ville... <span>▼</span></div>
+              <div class="dropdown-body" id="dropdownBody">
+                <input type="text" class="dropdown-search" id="citySearch" placeholder="Rechercher une ville..." onkeyup="filterCities()">
+                <ul class="dropdown-list" id="cityList"></ul>
+              </div>
+            </div>
+            <input type="hidden" name="city" id="selectedCity">
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- Order Summary Area -->
+    <div class="order-summary">
+      <h3>Résumé de la Commande</h3>
+      
+      <div id="checkoutItemsList">
+        <div class="empty-cart-msg">Votre panier est vide.</div>
+      </div>
+
+      <div class="pricing-totals" id="pricingTotals" style="display: none;">
+        <div class="pricing-row">
+          <span>Prix Original</span>
+          <span id="originalPrice" style="text-decoration: line-through; color: #999;">0 MAD</span>
+        </div>
+        <div class="pricing-row discount">
+          <span>Vous économisez</span>
+          <span id="discountAmount">-0 MAD</span>
+        </div>
+        <div class="pricing-row">
+          <span>Livraison</span>
+          <span>Gratuite</span>
+        </div>
+        <div class="pricing-row total">
+          <span>Net à Payer</span>
+          <span id="netToPay">0 MAD</span>
+        </div>
+      </div>
+
+      <button class="btn-pay" onclick="placeOrder()">Commander</button>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedCart = localStorage.getItem('siliaCart');
+      if (savedCart) {
+        try {
+          const cartData = JSON.parse(savedCart);
+          if (cartData.items && cartData.items.length > 0) {
+            renderCart(cartData.items);
+            document.getElementById('pricingTotals').style.display = 'block';
+          }
+        } catch(e) {}
+      }
+    });
+
+    const moroccoCities = [
+      "Casablanca", "Rabat", "Fes", "Marrakech", "Tangier", "Agadir", "Meknes", "Oujda", 
+      "Kenitra", "Tetouan", "Safi", "Mohammedia", "Khouribga", "El Jadida", "Beni Mellal",
+      "Nador", "Taza", "Settat", "Ksar El Kebir", "Larache", "Khemisset", "Guelmim",
+      "Berrechid", "Taourirt", "Taroudant", "Essaouira", "Dakhla", "Laayoune"
+    ];
+
+    const cityListEl = document.getElementById('cityList');
+    const dropdownHeader = document.querySelector('.dropdown-header');
+    const dropdownBody = document.getElementById('dropdownBody');
+    const citySearch = document.getElementById('citySearch');
+    const selectedCity = document.getElementById('selectedCity');
+
+    function populateCities(cities) {
+      if(!cityListEl) return;
+      cityListEl.innerHTML = '';
+      cities.forEach(city => {
+        const li = document.createElement('li');
+        li.textContent = city;
+        li.onclick = () => selectCity(city);
+        cityListEl.appendChild(li);
+      });
+    }
+
+    function toggleDropdown() {
+      if(!dropdownBody) return;
+      dropdownBody.classList.toggle('show');
+      dropdownHeader.classList.toggle('active');
+      if(dropdownBody.classList.contains('show')) {
+        citySearch.focus();
+      }
+    }
+
+    function selectCity(city) {
+      dropdownHeader.innerHTML = `${city} <span>▼</span>`;
+      dropdownHeader.style.color = '#111';
+      selectedCity.value = city;
+      toggleDropdown();
+    }
+
+    function filterCities() {
+      const val = citySearch.value.toLowerCase();
+      const filtered = moroccoCities.filter(c => c.toLowerCase().includes(val));
+      populateCities(filtered);
+    }
+
+    document.addEventListener('click', (e) => {
+      if(!e.target.closest('.custom-dropdown')) {
+        if(dropdownBody) dropdownBody.classList.remove('show');
+        if(dropdownHeader) dropdownHeader.classList.remove('active');
+      }
+    });
+
+    if(cityListEl) populateCities(moroccoCities);
+
+    window.changeQty = function(title, delta) {
+      let items = JSON.parse(localStorage.getItem('siliaCart') || '{"items":[]}').items;
+      if(delta > 0) {
+        // Find one matching item and duplicate it
+        const itemToClone = items.find(i => i.title === title);
+        if(itemToClone) items.push(itemToClone);
+      } else if(delta < 0) {
+        // Remove exactly one matching item
+        const indexToRemove = items.findIndex(i => i.title === title);
+        if(indexToRemove > -1) items.splice(indexToRemove, 1);
+      }
+      localStorage.setItem('siliaCart', JSON.stringify({items}));
+      renderCart(items);
+    };
+
+    window.removeProduct = function(title) {
+      let items = JSON.parse(localStorage.getItem('siliaCart') || '{"items":[]}').items;
+      items = items.filter(i => i.title !== title);
+      localStorage.setItem('siliaCart', JSON.stringify({items}));
+      renderCart(items);
+    };
+
+    function renderCart(items) {
+      const listEl = document.getElementById('checkoutItemsList');
+      listEl.innerHTML = '';
+
+      if (!items || items.length === 0) {
+        listEl.innerHTML = `
+          <div style="text-align:center; padding:40px 20px; color:#999;">
+            <div style="font-size:2.5rem; margin-bottom:10px;">🛒</div>
+            <p style="font-weight:600; margin-bottom:15px;">Votre panier est vide</p>
+            <a href="index.html" style="color:#ff4d4f; font-weight:600; text-decoration:none;">← Retour à la boutique</a>
+          </div>`;
+        document.getElementById('pricingTotals').style.display = 'none';
+        return;
+      }
+
+      let netTotal = 0;
+      let totalOldPrice = 0;
+
+      // Group items by title
+      const grouped = [];
+      items.forEach(item => {
+        const existing = grouped.find(g => g.title === item.title);
+        if(existing) { 
+          existing.qty += 1; 
+        } else { 
+          grouped.push({ ...item, qty: 1 }); 
+        }
+      });
+
+      grouped.forEach(item => {
+        const priceNum = parseInt(String(item.price).replace(/[^0-9]/g, '').trim()) || 0;
+        const oldPriceNum = parseInt(String(item.oldPrice || '').replace(/[^0-9]/g, '').trim()) || 0;
+        
+        const linePrice = priceNum * item.qty;
+        const lineOldPrice = (oldPriceNum || priceNum) * item.qty;
+
+        netTotal += linePrice;
+        totalOldPrice += lineOldPrice; 
+
+        // Escape quotes for inline click handler
+        const safeTitle = item.title.replace(/'/g, "\\'");
+
+        listEl.innerHTML += `
+          <div class="summary-item" style="position:relative; align-items: flex-start;">
+            <button onclick="removeProduct('${safeTitle}')" title="Remove Item" style="position:absolute; top: -5px; right: 0; background: #fff; color: #ff4d4f; border: 1px solid #ff4d4f; border-radius: 50%; width: 22px; height: 22px; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: all 0.2s;" onmouseover="this.style.background='#ff4d4f'; this.style.color='#fff';" onmouseout="this.style.background='#fff'; this.style.color='#ff4d4f';">✕</button>
+            <img src="${item.img || ''}" alt="${item.title}" class="summary-img"
+              onerror="this.style.background='#f5f5f7'; this.removeAttribute('src')">
+            <div class="summary-info">
+              <h4 style="padding-right: 15px; margin-bottom: 5px; font-size: 0.95rem;">${item.title}</h4>
+              <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                <button onclick="changeQty('${safeTitle}', -1)" style="border: 1px solid #e0e0e0; background: #fff; color: #111; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s;">−</button>
+                <span style="font-weight: 700; font-size: 0.9rem; min-width: 12px; text-align: center;">${item.qty}</span>
+                <button onclick="changeQty('${safeTitle}', 1)" style="border: 1px solid #e0e0e0; background: #fff; color: #111; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: all 0.2s;">+</button>
+              </div>
+            </div>
+            <div class="summary-price" style="align-self: center; font-size: 0.95rem; white-space: nowrap;">${linePrice} MAD</div>
+          </div>
+        `;
+      });
+
+      const saved = totalOldPrice - netTotal;
+      document.getElementById('originalPrice').textContent = totalOldPrice + ' MAD';
+      document.getElementById('discountAmount').textContent = saved > 0 ? '-' + saved + ' MAD' : 'Cadeau 🎁';
+      document.getElementById('netToPay').textContent = netTotal + ' MAD';
+      document.getElementById('pricingTotals').style.display = 'block';
+    }
+
+    async function placeOrder() {
+      const savedCart = localStorage.getItem('siliaCart');
+      if(!savedCart || JSON.parse(savedCart).items.length === 0) {
+        alert("Votre panier est vide !");
+        return;
+      }
+      
+      const items = JSON.parse(savedCart).items;
+      
+      // Capture form data
+      const phoneInput = document.querySelector('.phone-input-group input').value;
+      const fullName = document.getElementById('fullName').value;
+      let city = document.getElementById('selectedCity').value;
+      if(!city) {
+        const header = document.querySelector('.dropdown-header');
+        if(header) city = header.innerText.replace('▼','').trim();
+      }
+      
+      if(!phoneInput || !fullName || city === 'Sélectionnez une ville...' || city === 'City') {
+        alert("Veuillez renseigner votre numéro de téléphone, votre nom complet et votre ville.");
+        return;
+      }
+
+      // Calculate total and group items for DB
+      let netTotal = 0;
+      const groupedItems = [];
+      
+      items.forEach(item => {
+        netTotal += parseInt(item.price.replace('MAD', '').replace('$', '').replace(',', '').trim());
+        
+        const existing = groupedItems.find(g => g.title === item.title);
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          groupedItems.push({ ...item, qty: 1 });
+        }
+      });
+
+      const orderData = {
+        id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+        customer_name: fullName.trim(),
+        phone: `+212 ${phoneInput}`,
+        city: city,
+        total: `${netTotal} MAD`,
+        status: 'Pending',
+        items: groupedItems,
+        created_at: new Date().toISOString()
+      };
+
+      const btn = document.querySelector('.checkout-btn') || document.querySelector('.btn-pay');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = 'Traitement sécurisé en cours...';
+      btn.disabled = true;
+
+      try {
+        await saveOrder(orderData);
+        localStorage.removeItem('siliaCart');
+        window.location.href = 'success.html?id=' + orderData.id;
+      } catch (e) {
+        console.error("Order failed", e);
+        alert("Une erreur s'est produite. Veuillez réessayer.");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

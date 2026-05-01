@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - SILIA</title>
+  <style>
+    :root {
+      --bg-color: #fafafa;
+      --text-color: #111;
+      --accent: #ff4d4f;
+      --glass: rgba(255, 255, 255, 0.9);
+      --glass-border: rgba(0, 0, 0, 0.05);
+    }
+    body {
+      margin: 0; padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      user-select: none;
+    }
+    
+    /* Subtle background ambient blur */
+    .glow-1 {
+      position: absolute;
+      width: 40vw; height: 40vw;
+      background: radial-gradient(circle, rgba(255,77,79,0.08) 0%, rgba(250,250,250,0) 70%);
+      top: 20%; left: 10%;
+      z-index: 0;
+    }
+    .glow-2 {
+      position: absolute;
+      width: 40vw; height: 40vw;
+      background: radial-gradient(circle, rgba(0,0,0,0.03) 0%, rgba(250,250,250,0) 70%);
+      bottom: 10%; right: 10%;
+      z-index: 0;
+    }
+
+    .login-container {
+      position: relative;
+      z-index: 10;
+      background: #ffffff;
+      border: 1px solid var(--glass-border);
+      border-radius: 40px;
+      padding: 50px 40px;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.06), 0 10px 20px rgba(0,0,0,0.02);
+    }
+
+    .logo-container {
+      margin-bottom: 25px;
+    }
+    .logo-container img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 0 0 5px 0;
+      color: #111;
+      letter-spacing: -0.02em;
+    }
+    p {
+      color: #888;
+      font-size: 0.95rem;
+      margin: 0 0 35px 0;
+    }
+    
+    /* Pin Dots */
+    .pin-display {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+    .pin-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid #ddd;
+      background: #fafafa;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .pin-dot.filled {
+      background: #111;
+      border-color: #111;
+      transform: scale(1.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .pin-dot.error {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(255,77,79,0.3);
+    }
+
+    /* Keypad */
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px 20px;
+      justify-items: center;
+    }
+    .key {
+      width: 75px; height: 75px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.8rem;
+      font-weight: 500;
+      color: #111;
+      background: #f7f7f9;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .key:hover {
+      background: #f0f0f3;
+    }
+    .key:active {
+      background: #e5e5e8;
+      transform: scale(0.92);
+    }
+    .key.action {
+      background: transparent;
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #999;
+    }
+    .key.action:hover {
+      color: #111;
+    }
+    .key.action:active {
+      background: transparent;
+      transform: scale(0.92);
+    }
+
+    /* Shake animation for error */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-12px); }
+      40%, 80% { transform: translateX(12px); }
+    }
+    .shake {
+      animation: shake 0.4s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+  
+  <div class="login-container" id="loginBox">
+    
+    <div class="logo-container">
+      <img src="assets/img/logo.png" alt="SILIA Logo">
+    </div>
+
+    <h1>Welcome Back</h1>
+    <p>Enter your 4-digit security PIN</p>
+    
+    <div class="pin-display" id="pinDisplay">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+
+    <div class="keypad">
+      <div class="key" onclick="pressKey('1')">1</div>
+      <div class="key" onclick="pressKey('2')">2</div>
+      <div class="key" onclick="pressKey('3')">3</div>
+      <div class="key" onclick="pressKey('4')">4</div>
+      <div class="key" onclick="pressKey('5')">5</div>
+      <div class="key" onclick="pressKey('6')">6</div>
+      <div class="key" onclick="pressKey('7')">7</div>
+      <div class="key" onclick="pressKey('8')">8</div>
+      <div class="key" onclick="pressKey('9')">9</div>
+      <div class="key action" onclick="clearPin()">CLR</div>
+      <div class="key" onclick="pressKey('0')">0</div>
+      <div class="key action" onclick="deleteKey()">⌫</div>
+    </div>
+  </div>
+
+  <script>
+    const CORRECT_PIN = "8808";
+    let currentPin = "";
+    
+    const dots = document.querySelectorAll('.pin-dot');
+    const loginBox = document.getElementById('loginBox');
+
+    function updateDisplay() {
+      dots.forEach((dot, index) => {
+        if (index < currentPin.length) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.remove('filled');
+          dot.classList.remove('error');
+        }
+      });
+    }
+
+    function pressKey(num) {
+      if (currentPin.length < 4) {
+        currentPin += num;
+        updateDisplay();
+        
+        if (currentPin.length === 4) {
+          checkPin();
+        }
+      }
+    }
+
+    function deleteKey() {
+      if (currentPin.length > 0) {
+        currentPin = currentPin.slice(0, -1);
+        updateDisplay();
+      }
+    }
+
+    function clearPin() {
+      currentPin = "";
+      updateDisplay();
+    }
+
+    function checkPin() {
+      if (currentPin === CORRECT_PIN) {
+        // Success Animation
+        dots.forEach(dot => {
+          dot.style.background = '#4caf50';
+          dot.style.borderColor = '#4caf50';
+          dot.style.boxShadow = '0 0 15px rgba(76, 175, 80, 0.3)';
+        });
+        setTimeout(() => {
+          // Basic security redirect
+          sessionStorage.setItem('silia_admin_auth', 'true');
+          window.location.href = 'admin-dashboard.html';
+        }, 600);
+      } else {
+        // Error Animation
+        dots.forEach(dot => dot.classList.add('error'));
+        loginBox.classList.add('shake');
+        
+        setTimeout(() => {
+          loginBox.classList.remove('shake');
+          currentPin = "";
+          updateDisplay();
+        }, 500);
+      }
+    }
+
+    // Allow physical keyboard input
+    document.addEventListener('keydown', (e) => {
+      if (e.key >= '0' && e.key <= '9') {
+        pressKey(e.key);
+      } else if (e.key === 'Backspace') {
+        deleteKey();
+      } else if (e.key === 'Escape') {
+        clearPin();
+      }
+    });
+  </script>
+</body>
+</html>

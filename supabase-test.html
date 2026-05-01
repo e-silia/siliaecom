@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SILIA - Supabase Connection Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabaseClient.js"></script>
+  <style>
+    body { font-family: monospace; padding: 40px; background: #f9fafb; }
+    h1 { font-size: 1.4rem; margin-bottom: 30px; }
+    .test { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; margin-bottom: 15px; }
+    .ok { border-left: 4px solid #10b981; }
+    .fail { border-left: 4px solid #ef4444; }
+    .label { font-weight: bold; margin-bottom: 5px; font-size: 0.95rem; }
+    .msg { color: #555; font-size: 0.85rem; white-space: pre-wrap; }
+    .msg.error { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <h1>🔬 SILIA - Supabase Diagnostics</h1>
+  <div id="results">Running tests...</div>
+
+  <script>
+    const out = document.getElementById('results');
+
+    function addResult(label, ok, msg) {
+      out.innerHTML += `
+        <div class="test ${ok ? 'ok' : 'fail'}">
+          <div class="label">${ok ? '✅' : '❌'} ${label}</div>
+          <div class="msg ${ok ? '' : 'error'}">${msg}</div>
+        </div>
+      `;
+    }
+
+    async function runTests() {
+      out.innerHTML = '';
+
+      // Test 1: Client initialized
+      try {
+        const client = window.supabase.createClient(
+          'https://xudfzohnlxaukzziyyrl.supabase.co',
+          'sb_publishable_rfjRHave4ABrUW8vCcfDUw_5OhzCa6u'
+        );
+        addResult('Supabase Client Initialized', true, 'Client created successfully');
+      } catch(e) {
+        addResult('Supabase Client Initialized', false, e.message);
+        return;
+      }
+
+      // Test 2: Products table — read
+      try {
+        const { data, error } = await supabase.from('products').select('*').limit(1);
+        if (error) throw error;
+        addResult('Products Table — Read', true, `Table exists. Found ${data.length} row(s).`);
+      } catch(e) {
+        addResult('Products Table — Read', false,
+          `Error: ${e.message}\n\nFix: Run the SQL script in your Supabase dashboard to create the 'products' table.`);
+      }
+
+      // Test 3: Products table — insert test
+      try {
+        const testId = 'diag-test-' + Date.now();
+        const { error: insErr } = await supabase.from('products').insert([{
+          id: testId, name: 'Diagnostic Test', price: '1', old_price: '2',
+          description: 'auto test', img: '', pack_items: []
+        }]);
+        if (insErr) throw insErr;
+
+        // cleanup
+        await supabase.from('products').delete().eq('id', testId);
+        addResult('Products Table — Insert/Delete', true, 'Insert and delete work correctly!');
+      } catch(e) {
+        addResult('Products Table — Insert/Delete', false,
+          `Error: ${e.message}\n\nLikely cause: RLS policy missing or table doesn't exist.`);
+      }
+
+      // Test 4: Orders table — read
+      try {
+        const { data, error } = await supabase.from('orders').select('*').limit(1);
+        if (error) throw error;
+        addResult('Orders Table — Read', true, `Table exists. Found ${data.length} order(s).`);
+      } catch(e) {
+        addResult('Orders Table — Read', false,
+          `Error: ${e.message}\n\nFix: Run the SQL script in your Supabase dashboard to create the 'orders' table.`);
+      }
+
+      out.innerHTML += '<div style="margin-top:20px; padding:15px; background:#fff; border-radius:10px; border:1px solid #ddd;"><strong>Done.</strong> Fix any ❌ errors above, then retry saving products.</div>';
+    }
+
+    runTests();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SILIA - Admin Dashboard</title>
+  <!-- Supabase CDN must load first -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabaseClient.js"></script>
+  <style>
+    :root {
+      --bg-light: #f4f6f8;
+      --sidebar-bg: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --accent: #ff4d4f;
+      --accent-hover: #ff7875;
+      --border-color: #e5e7eb;
+      --card-bg: #ffffff;
+      
+      --status-pending: #f59e0b;
+      --status-processing: #3b82f6;
+      --status-shipped: #8b5cf6;
+      --status-delivered: #10b981;
+    }
+    
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-light);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+      z-index: 10;
+    }
+    .brand {
+      padding: 0 25px 30px 25px;
+      display: flex;
+      align-items: center;
+    }
+    .brand img {
+      height: 35px;
+      object-fit: contain;
+    }
+    .nav-links {
+      list-style: none; padding: 0; margin: 0;
+      flex: 1;
+    }
+    .nav-links li { margin-bottom: 5px; padding: 0 15px; }
+    .nav-links a {
+      display: flex; align-items: center; gap: 15px;
+      padding: 12px 20px;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      background: rgba(255, 77, 79, 0.08);
+      color: var(--accent);
+    }
+    .logout-btn {
+      margin: 20px 15px;
+      padding: 12px 20px;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 12px;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .logout-btn:hover { background: #f3f4f6; color: var(--text-main); }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .topbar {
+      height: 70px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+    }
+    .topbar h2 { margin: 0; font-size: 1.2rem; font-weight: 600; }
+    .topbar-right { display: flex; align-items: center; gap: 20px; }
+    .admin-profile {
+      display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem;
+    }
+    .admin-avatar { width: 35px; height: 35px; background: #111; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+    /* Views */
+    .view-section {
+      padding: 40px;
+      overflow-y: auto;
+      flex: 1;
+      display: none;
+    }
+    .view-section.active { display: block; }
+
+    /* Dashboard Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    .stat-card h3 { margin: 0 0 10px 0; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; }
+    .stat-card .value { font-size: 2.2rem; font-weight: 700; color: var(--text-main); margin: 0; }
+
+    /* Tables */
+    .card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 20px 25px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-header h3 { margin: 0; font-size: 1.1rem; }
+    .btn-primary {
+      background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 16px 25px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    th { background: #f9fafb; font-weight: 600; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { font-size: 0.95rem; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    
+    .product-cell { display: flex; align-items: center; gap: 15px; }
+    .product-cell img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; background: #f5f5f7; }
+    .product-cell div { font-weight: 600; }
+
+    /* Badges & Actions */
+    .badge {
+      padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; display: inline-block;
+    }
+    .badge.pending { background: rgba(245, 158, 11, 0.1); color: var(--status-pending); }
+    .badge.processing { background: rgba(59, 130, 246, 0.1); color: var(--status-processing); }
+    .badge.shipped { background: rgba(139, 92, 246, 0.1); color: var(--status-shipped); }
+    .badge.delivered { background: rgba(16, 185, 129, 0.1); color: var(--status-delivered); }
+
+    .action-link {
+      color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: none; margin-right: 15px; font-size: 0.9rem;
+    }
+    .action-link.delete { color: #ef4444; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 1000; opacity: 0; visibility: hidden; transition: 0.3s;
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: #fff; width: 90%; max-width: 550px; border-radius: 24px; padding: 35px;
+      position: relative; transform: translateY(20px); transition: 0.3s;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+    .close-modal {
+      position: absolute; top: 20px; right: 25px; font-size: 1.5rem; cursor: pointer; color: #999;
+    }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.95rem; outline: none;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+
+    .order-details-box {
+      background: #f9fafb; padding: 20px; border-radius: 15px; margin-bottom: 20px;
+    }
+    .order-item-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eaeaea; }
+    .order-item-row:last-child { border: none; margin: 0; padding: 0; }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed; bottom: 30px; right: 30px;
+      background: #111; color: #fff;
+      padding: 14px 22px; border-radius: 14px;
+      font-size: 0.95rem; font-weight: 600;
+      z-index: 9999; opacity: 0; transform: translateY(20px);
+      transition: all 0.3s; pointer-events: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: #10b981; }
+    .toast.error { background: #ef4444; }
+
+    /* Mobile Responsive Design */
+    .menu-toggle {
+      display: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--text-main);
+      margin-right: 15px;
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.4); z-index: 15;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .sidebar-overlay.active {
+      display: block; opacity: 1;
+    }
+    
+    @media (max-width: 900px) {
+      .menu-toggle { display: block; }
+      
+      .sidebar {
+        position: fixed;
+        left: -260px;
+        top: 0;
+        height: 100vh;
+        transition: left 0.3s ease;
+        z-index: 20;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.05);
+      }
+      .sidebar.active { left: 0; }
+
+      .topbar { padding: 0 20px; }
+      .view-section { padding: 20px; }
+      
+      .card { overflow-x: auto; }
+      table { min-width: 600px; } /* Prevent table from breaking */
+      
+      .stats-grid { grid-template-columns: 1fr; }
+      
+      .modal-content {
+        width: 95%; padding: 20px; margin: 20px auto; max-height: 90vh; overflow-y: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="assets/img/logo.png" alt="SILIA Logo">
+    </div>
+    <ul class="nav-links">
+      <li>
+        <a href="#dashboard" class="active" data-view="dashboard">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="#orders" data-view="orders">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          Orders
+          <span class="badge" style="margin-left:auto; background: #eee; color: #333;" id="navOrderCount">0</span>
+        </a>
+      </li>
+      <li>
+        <a href="#products" data-view="products">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+          Products
+        </a>
+      </li>
+    </ul>
+    <div class="logout-btn" onclick="logout()">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        Logout
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="topbar">
+      <div style="display:flex; align-items:center;">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <h2 id="topbarTitle">Dashboard Overview</h2>
+      </div>
+      <div class="topbar-right">
+        <div class="admin-profile">
+          <div class="admin-avatar">AD</div>
+          Admin User
+        </div>
+      </div>
+    </header>
+
+    <!-- VIEW: Dashboard -->
+    <div class="view-section active" id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Revenue</h3>
+          <p class="value" id="statRevenue">0 MAD</p>
+        </div>
+        <div class="stat-card">
+          <h3>Active Orders</h3>
+          <p class="value" id="statOrders">0</p>
+        </div>
+        <div class="stat-card">
+          <h3>Products in Catalog</h3>
+          <p class="value" id="statProducts">0</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Recent Activity</h3>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="recentOrdersTbody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VIEW: Orders -->
+    <div class="view-section" id="view-orders">
+      <div class="card">
+        <div class="card-header">
+          <h3>Order Management</h3>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTbody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VIEW: Products -->
+    <div class="view-section" id="view-products">
+      <div class="card">
+        <div class="card-header">
+          <h3>Product Catalog</h3>
+          <button class="btn-primary" onclick="openProductForm()">+ Add Product</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Price (MAD)</th>
+              <th>Stock Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productsTbody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VIEW: Product Form -->
+    <div class="view-section" id="view-product-form">
+      <div class="card" style="max-width: 800px; margin: 0 auto; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+          <h2 style="margin:0" id="productModalTitle">Add New Product</h2>
+          <button class="btn-primary" style="background:#f3f4f6; color:#111; border:1px solid #ddd;" onclick="closeProductForm()">Cancel</button>
+        </div>
+        
+        <input type="hidden" id="prodId">
+        <div class="form-group">
+          <label>Product Name</label>
+          <input type="text" id="prodName" placeholder="e.g. Diamond Serum">
+        </div>
+        <div class="form-group">
+          <label>Product Image</label>
+          <!-- Tab switcher -->
+          <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <button type="button" id="tabUpload" onclick="switchImgTab('upload')" style="flex:1; padding:8px; border-radius:8px; border:2px solid #111; background:#111; color:#fff; font-weight:600; cursor:pointer; font-size:0.85rem;">📁 Upload File</button>
+            <button type="button" id="tabUrl" onclick="switchImgTab('url')" style="flex:1; padding:8px; border-radius:8px; border:2px solid #ddd; background:#fff; color:#666; font-weight:600; cursor:pointer; font-size:0.85rem;">🔗 Paste URL</button>
+          </div>
+          <!-- Upload panel -->
+          <div id="imgPanelUpload">
+            <input type="file" id="prodImgFile" accept="image/*" style="padding: 9px 15px; width:100%; box-sizing:border-box;" onchange="onFileChange(this)">
+          </div>
+          <!-- URL panel -->
+          <div id="imgPanelUrl" style="display:none;">
+            <input type="text" id="prodImgUrl" placeholder="https://example.com/image.jpg  — paste any image URL" style="width:100%; box-sizing:border-box; padding:12px 15px; border:1px solid #ddd; border-radius:10px; outline:none; font-size:0.95rem;" oninput="onUrlChange(this.value)">
+          </div>
+          <input type="hidden" id="prodImgBase64">
+          <!-- Shared preview -->
+          <div id="imgPreviewWrap" style="display:none; margin-top:15px; position:relative;">
+            <img id="prodImgPreview" style="width:100%; max-height:280px; object-fit:contain; border-radius:12px; border:1px solid #eee; background:#f9fafb; padding:10px; box-sizing:border-box;">
+            <button type="button" onclick="clearImage()" style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.6); color:#fff; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:1rem; line-height:1;">×</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:15px;">
+          <div class="form-group" style="flex:1">
+            <label>New Price (MAD)</label>
+            <input type="number" id="prodPrice" placeholder="85">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>Old Price (MAD)</label>
+            <input type="number" id="prodOldPrice" placeholder="120">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Main Description</label>
+          <textarea id="prodDesc" rows="4" placeholder="Rich, velvety texture..." style="width:100%; padding:12px 15px; border:1px solid var(--border-color); border-radius:10px; font-family:inherit; outline:none;"></textarea>
+        </div>
+
+        <div class="pack-items-section" style="background:#f9fafb; padding:25px; border-radius:12px; margin-bottom:30px; border:1px solid var(--border-color);">
+          <h4 style="margin:0 0 15px 0; font-size:1.05rem;">What's included in this pack:</h4>
+          <div id="packItemsList" style="margin-bottom:20px; font-size:0.9rem; color:#666;">No items added yet.</div>
+          
+          <div style="display:flex; gap:15px; margin-bottom:15px;">
+            <input type="text" id="subItemTitle" placeholder="Item Title" style="flex:1; padding:10px 15px; border:1px solid #ddd; border-radius:8px; outline:none;">
+            <input type="text" id="subItemOldPrice" placeholder="Old Price" style="width:110px; padding:10px 15px; border:1px solid #ddd; border-radius:8px; outline:none;">
+          </div>
+          <div style="margin-bottom:15px;">
+            <input type="text" id="subItemDesc" placeholder="Description" style="width:100%; box-sizing:border-box; padding:10px 15px; border:1px solid #ddd; border-radius:8px; outline:none;">
+          </div>
+          <div style="margin-bottom:15px;">
+            <div style="margin-bottom:10px;">
+              <label style="display:block; font-size:0.85rem; color:#444; font-weight:600; margin-bottom:5px;">Upload Image (Optional)</label>
+              <input type="file" id="subItemImgFile" accept="image/*" style="width:100%; box-sizing:border-box; padding:8px; border:1px solid #ddd; border-radius:8px; outline:none; background:#fff;">
+            </div>
+            <div>
+              <label style="display:block; font-size:0.85rem; color:#444; font-weight:600; margin-bottom:5px;">Or Paste Image URL</label>
+              <input type="text" id="subItemImgUrl" placeholder="https://example.com/image.png" style="width:100%; box-sizing:border-box; padding:10px 15px; border:1px solid #ddd; border-radius:8px; outline:none;">
+            </div>
+          </div>
+          <button class="btn-primary" style="padding:8px 16px; font-size:0.9rem; background:#111; border-radius:8px;" onclick="addSubItem()">+ Add to Pack</button>
+        </div>
+        
+        <button class="btn-primary" style="width:100%; padding: 15px; font-size: 1.1rem; border-radius: 12px;" onclick="saveProduct()">Save Product Details</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: Order Details -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal-content">
+      <div class="close-modal" onclick="closeModal('orderModal')">×</div>
+      <h2 style="margin-top:0" id="modalOrderId">Order #000</h2>
+      
+      <div class="order-details-box">
+        <p><strong>Customer:</strong> <span id="modalCustomerName"></span></p>
+        <p><strong>Phone:</strong> <span id="modalCustomerPhone"></span></p>
+        <p><strong>City:</strong> <span id="modalCustomerCity"></span></p>
+        <hr style="border:0; border-top:1px solid #ddd; margin:15px 0;">
+        <h4>Items Ordered:</h4>
+        <div id="modalOrderItems"></div>
+        <h3 style="text-align:right; margin-top:15px;">Total: <span id="modalOrderTotal"></span></h3>
+      </div>
+
+      <div class="form-group">
+        <label>Update Order Status</label>
+        <select id="statusSelect">
+          <option value="Pending">Pending</option>
+          <option value="Processing">Processing</option>
+          <option value="Shipped">Shipped</option>
+          <option value="Delivered">Delivered</option>
+        </select>
+      </div>
+      
+      <div style="display: flex; gap: 15px;">
+        <button class="btn-primary" style="flex:1" onclick="saveOrderStatus()">Save Changes</button>
+        <button class="btn-primary" style="flex:1; background:#fff; color:#111; border:2px solid #111;" onclick="printBonDeLivraison()">🖨️ Imprimer Bon de Livraison</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <script>
+    // Security check
+    if(sessionStorage.getItem('silia_admin_auth') !== 'true') {
+      window.location.href = 'admin.html';
+    }
+
+    function logout() {
+      sessionStorage.removeItem('silia_admin_auth');
+      window.location.href = 'admin.html';
+    }
+
+    // ── URL Hash-Based Navigation ──
+    const navLinks = document.querySelectorAll('.nav-links a');
+    const views = document.querySelectorAll('.view-section');
+    const topbarTitle = document.getElementById('topbarTitle');
+
+    function navigate(view) {
+      if (!['dashboard', 'orders', 'products', 'product-form'].includes(view)) view = 'dashboard';
+      
+      // Update active nav link
+      navLinks.forEach(l => l.classList.remove('active'));
+      const activeLink = document.querySelector(`.nav-links a[data-view="${view}"]`);
+      if (activeLink) activeLink.classList.add('active');
+
+      // Show correct view
+      views.forEach(v => v.classList.remove('active'));
+      const target = document.getElementById('view-' + view);
+      if (target) target.classList.add('active');
+
+      // Update topbar title
+      const titles = { dashboard: 'Dashboard Overview', orders: 'Orders Management', products: 'Products Catalog', 'product-form': 'Product Editor' };
+      if(topbarTitle) topbarTitle.textContent = titles[view] || 'Dashboard';
+
+      // Close sidebar on mobile
+      if (window.innerWidth <= 900) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if(sidebar) sidebar.classList.remove('active');
+        if(overlay) overlay.classList.remove('active');
+      }
+    }
+
+    // Listen for browser back/forward (triggered automatically when clicking links with href="#...")
+    window.addEventListener('hashchange', () => {
+      const view = location.hash.replace('#', '') || 'dashboard';
+      navigate(view);
+    });
+
+    // On initial load, read hash from URL
+    (function() {
+      const view = location.hash.replace('#', '') || 'dashboard';
+      navigate(view);
+    })();
+
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('active');
+      document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
+
+    // Modals
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+
+    // Render Logic
+    let currentOrderId = null;
+
+    async function loadData() {
+      const orders = await getOrders();
+      const products = await getProducts();
+
+      // Stats
+      document.getElementById('statOrders').textContent = orders.filter(o => o.status !== 'Delivered').length;
+      document.getElementById('navOrderCount').textContent = orders.length;
+      document.getElementById('statProducts').textContent = products.length;
+      
+      let revenue = 0;
+      orders.forEach(o => {
+        if(o.status === 'Delivered') {
+          revenue += parseInt(String(o.total).replace('MAD','').trim() || 0);
+        }
+      });
+      document.getElementById('statRevenue').textContent = revenue + ' MAD';
+
+      // Render Orders
+      const ordersHtml = orders.map(o => `
+        <tr>
+          <td><strong>${o.id}</strong></td>
+          <td>${o.customer || o.customer_name}</td>
+          <td>${o.date || new Date(o.created_at || Date.now()).toLocaleDateString()}</td>
+          <td><strong>${o.total}</strong></td>
+          <td><span class="badge ${String(o.status).toLowerCase()}">${o.status}</span></td>
+          <td><span class="action-link" onclick="viewOrder('${o.id}')">View Details</span></td>
+        </tr>
+      `).join('');
+      
+      document.getElementById('ordersTbody').innerHTML = ordersHtml.length
+        ? ordersHtml
+        : `<tr><td colspan="6" style="text-align:center; color:#aaa; padding:30px;">No orders yet.</td></tr>`;
+      document.getElementById('recentOrdersTbody').innerHTML = orders.slice(0,4).map(o => `
+        <tr>
+          <td><strong>${o.id}</strong></td>
+          <td>${o.customer || o.customer_name}</td>
+          <td><strong>${o.total}</strong></td>
+          <td><span class="badge ${String(o.status).toLowerCase()}">${o.status}</span></td>
+        </tr>
+      `).join('');
+
+      // Render Products
+      const productsHtml = products.map(p => `
+        <tr>
+          <td>
+            <div class="product-cell">
+              <img src="${p.img || 'assets/img/serum.png'}" alt="${p.name}">
+              <div>${p.name}</div>
+            </div>
+          </td>
+          <td><strong>${p.price} MAD</strong> <span style="text-decoration:line-through; color:#999; font-size:0.85rem; margin-left:8px;">${p.oldPrice || p.old_price || ''} MAD</span></td>
+          <td><span class="badge delivered">In Stock</span></td>
+          <td>
+            <span class="action-link" onclick="editProduct('${p.id}')">Edit</span>
+            <span class="action-link delete" onclick="deleteProduct('${p.id}')">Remove</span>
+          </td>
+        </tr>
+      `).join('');
+      document.getElementById('productsTbody').innerHTML = productsHtml.length
+        ? productsHtml
+        : `<tr><td colspan="4" style="text-align:center; color:#aaa; padding:30px;">No products yet. Click "+ Add Product" to get started.</td></tr>`;
+    }
+
+    let currentOrderId = null;
+    let currentOrderData = null;
+
+    async function viewOrder(id) {
+      const orders = await getOrders();
+      const order = orders.find(o => o.id === id);
+      if(!order) return;
+
+      currentOrderId = id;
+      currentOrderData = order;
+      document.getElementById('modalOrderId').textContent = `Order ${order.id}`;
+      document.getElementById('modalCustomerName').textContent = order.customer || order.customer_name;
+      document.getElementById('modalCustomerPhone').textContent = order.phone;
+      document.getElementById('modalCustomerCity').textContent = order.city;
+      document.getElementById('modalOrderTotal').textContent = order.total;
+      document.getElementById('statusSelect').value = order.status;
+
+      const itemsHtml = (order.items || []).map(item => `
+        <div class="order-item-row">
+          <span>${item.qty || 1}x ${item.title}</span>
+        </div>
+      `).join('');
+      document.getElementById('modalOrderItems').innerHTML = itemsHtml;
+
+      document.getElementById('orderModal').classList.add('active');
+    }
+
+    async function saveOrderStatus() {
+      const newStatus = document.getElementById('statusSelect').value;
+      await updateOrderStatus(currentOrderId, newStatus);
+      await loadData();
+      closeModal('orderModal');
+    }
+
+    function printBonDeLivraison() {
+      if(!currentOrderData) return;
+      const order = currentOrderData;
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      
+      const itemsHtml = (order.items || []).map(item => `
+        <tr>
+          <td style="padding: 12px 10px; border-bottom: 1px solid #ddd;">${item.qty || 1}</td>
+          <td style="padding: 12px 10px; border-bottom: 1px solid #ddd; font-weight: 600;">${item.title}</td>
+          <td style="padding: 12px 10px; border-bottom: 1px solid #ddd;">${item.price}</td>
+        </tr>
+      `).join('');
+
+      const d = new Date(order.created_at || Date.now());
+      const dateStr = d.toLocaleDateString('fr-FR') + ' à ' + d.toLocaleTimeString('fr-FR');
+      const logoUrl = window.location.href.split('admin-dashboard.html')[0] + 'assets/img/logo.png';
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Bon de Livraison - ${order.id}</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #111; padding: 40px; margin: 0; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
+            .logo { height: 50px; object-fit: contain; }
+            .title { text-align: right; }
+            .title h1 { margin: 0; font-size: 2rem; letter-spacing: -0.02em; text-transform: uppercase; }
+            .title p { margin: 5px 0 0 0; color: #666; }
+            
+            .info-section { display: flex; justify-content: space-between; margin-bottom: 40px; }
+            .box { width: 45%; }
+            .box h3 { margin: 0 0 10px 0; font-size: 0.95rem; color: #666; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+            .box p { margin: 5px 0; font-size: 1.1rem; font-weight: 600; }
+            
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th { text-align: left; padding: 12px 10px; background: #f9f9f9; border-bottom: 2px solid #111; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; }
+            
+            .total-section { text-align: right; font-size: 1.4rem; font-weight: 700; margin-top: 20px; border-top: 2px solid #111; padding-top: 20px; }
+            .footer { margin-top: 60px; text-align: center; color: #888; font-size: 0.9rem; border-top: 1px dashed #eee; padding-top: 20px; }
+            
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body onload="window.print(); window.onafterprint = function(){ window.close(); }">
+          <div class="header">
+            <img src="${logoUrl}" alt="SILIA Logo" class="logo">
+            <div class="title">
+              <h1>Bon de Livraison</h1>
+              <p>Référence : <strong>${order.id}</strong></p>
+              <p>Date : ${dateStr}</p>
+            </div>
+          </div>
+          
+          <div class="info-section">
+            <div class="box">
+              <h3>Expéditeur</h3>
+              <p>SILIA Cosmetics</p>
+              <p style="font-weight: 400; color: #555;">Casablanca, Maroc</p>
+            </div>
+            <div class="box">
+              <h3>Destinataire</h3>
+              <p>${order.customer || order.customer_name}</p>
+              <p style="font-weight: 400; color: #555;">${order.phone}</p>
+              <p style="font-weight: 400; color: #555;">${order.city}</p>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Qté</th>
+                <th>Description</th>
+                <th>Prix unitaire</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div class="total-section">
+            TOTAL : ${order.total}
+          </div>
+
+          <div class="footer">
+            <p>Merci pour votre confiance ! - L'équipe SILIA</p>
+          </div>
+        </body>
+        </html>
+      `;
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
+
+    // Product Pack Sub-Items Logic
+    let currentPackItems = [];
+
+    function addSubItem() {
+      return new Promise(async (resolve) => {
+        const title = document.getElementById('subItemTitle').value;
+        const oldPrice = document.getElementById('subItemOldPrice').value;
+        const desc = document.getElementById('subItemDesc').value;
+        const fileInput = document.getElementById('subItemImgFile');
+        const urlInput = document.getElementById('subItemImgUrl').value.trim();
+        if(!title) return resolve();
+        
+        const finishAdding = (imgData) => {
+          currentPackItems.push({ title, oldPrice, desc, img: imgData });
+          renderPackItems();
+          
+          document.getElementById('subItemTitle').value = '';
+          document.getElementById('subItemOldPrice').value = '';
+          document.getElementById('subItemDesc').value = '';
+          document.getElementById('subItemImgUrl').value = '';
+          fileInput.value = '';
+          resolve();
+        };
+
+        if (fileInput.files && fileInput.files[0]) {
+          showToast('Uploading sub-item image...', 'success');
+          try {
+            const uploadedUrl = await uploadProductImage(fileInput.files[0], 'subitem');
+            finishAdding(uploadedUrl);
+          } catch(err) {
+            showToast('Failed to upload sub-item image.', 'error');
+            resolve();
+          }
+        } else if (urlInput) {
+          finishAdding(urlInput);
+        } else {
+          finishAdding('assets/img/serum.png'); // Fallback
+        }
+      });
+    }
+    
+    function removeSubItem(index) {
+      currentPackItems.splice(index, 1);
+      renderPackItems();
+    }
+    
+    function renderPackItems() {
+      const list = document.getElementById('packItemsList');
+      if(currentPackItems.length === 0) {
+        list.innerHTML = 'No items added yet.';
+        return;
+      }
+      list.innerHTML = currentPackItems.map((item, i) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px 12px; border:1px solid #e5e7eb; border-radius:8px; margin-bottom:6px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <img src="${item.img}" style="width:30px; height:30px; object-fit:cover; border-radius:4px; background:#f0f0f0;">
+            <div>
+              <strong>${item.title}</strong> <span style="color:#999; text-decoration:line-through; font-size:0.8rem; margin-left:5px;">${item.oldPrice}</span>
+              <div style="font-size:0.75rem; color:#888; margin-top:2px;">${item.desc}</div>
+            </div>
+          </div>
+          <span style="color:#ef4444; font-size:1.2rem; cursor:pointer; font-weight:bold;" onclick="removeSubItem(${i})">×</span>
+        </div>
+      `).join('');
+    }
+
+    // Product Actions
+    document.getElementById('prodImgFile').addEventListener('change', function(e) {
+      if(e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const preview = document.getElementById('prodImgPreview');
+          preview.src = evt.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      }
+    });
+
+    function showProductFormView() {
+      document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-product-form').classList.add('active');
+    }
+
+    function closeProductForm() {
+      document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-products').classList.add('active');
+    }
+
+    function openProductForm() {
+      document.getElementById('productModalTitle').textContent = 'Add New Product';
+      document.getElementById('prodId').value = '';
+      document.getElementById('prodName').value = '';
+      document.getElementById('prodImgFile').value = '';
+      document.getElementById('prodImgUrl').value = '';
+      document.getElementById('prodImgBase64').value = '';
+      document.getElementById('prodImgPreview').src = '';
+      document.getElementById('imgPreviewWrap').style.display = 'none';
+      document.getElementById('prodPrice').value = '';
+      document.getElementById('prodOldPrice').value = '';
+      document.getElementById('prodDesc').value = '';
+      switchImgTab('upload');
+      currentPackItems = [];
+      renderPackItems();
+      showProductFormView();
+    }
+
+    async function editProduct(id) {
+      const products = await getProducts();
+      const prod = products.find(p => p.id === id);
+      if(!prod) return;
+
+      document.getElementById('productModalTitle').textContent = 'Edit Product';
+      document.getElementById('prodId').value = prod.id;
+      document.getElementById('prodName').value = prod.name;
+      document.getElementById('prodImgFile').value = '';
+      document.getElementById('prodImgUrl').value = prod.img && prod.img.startsWith('http') ? prod.img : '';
+      document.getElementById('prodImgBase64').value = prod.img || '';
+      document.getElementById('prodImgPreview').src = prod.img || '';
+      document.getElementById('imgPreviewWrap').style.display = prod.img ? 'block' : 'none';
+      // Switch to URL tab if existing image is a URL
+      switchImgTab(prod.img && prod.img.startsWith('http') ? 'url' : 'upload');
+      document.getElementById('prodPrice').value = prod.price;
+      document.getElementById('prodOldPrice').value = prod.oldPrice || prod.old_price || '';
+      document.getElementById('prodDesc').value = prod.desc || prod.description || '';
+      currentPackItems = prod.packItems || prod.pack_items || [];
+      renderPackItems();
+      showProductFormView();
+    }
+
+    async function saveProduct() {
+      // Auto-add any pending sub-item before saving
+      if (document.getElementById('subItemTitle').value.trim()) {
+        await addSubItem();
+      }
+
+      const id = document.getElementById('prodId').value;
+      const name = document.getElementById('prodName').value;
+      const price = document.getElementById('prodPrice').value;
+      const oldPrice = document.getElementById('prodOldPrice').value;
+      const desc = document.getElementById('prodDesc').value;
+      const packItems = [...currentPackItems];
+      const fileInput = document.getElementById('prodImgFile');
+      const saveBtn = document.querySelector('#view-product-form .btn-primary:last-of-type');
+
+      if(!name || !price) {
+        showToast('Name and price are required', 'error');
+        return;
+      }
+
+      saveBtn.textContent = 'Saving...';
+      saveBtn.disabled = true;
+
+      try {
+        // Priority: new file upload > pasted URL > existing stored image
+        let imgUrl = document.getElementById('prodImgBase64').value || '';
+        const urlInput = document.getElementById('prodImgUrl').value.trim();
+        const fileInput = document.getElementById('prodImgFile');
+
+        if (fileInput.files && fileInput.files[0]) {
+          showToast('Uploading image...', 'success');
+          imgUrl = await uploadProductImage(fileInput.files[0], id || 'new');
+        } else if (urlInput) {
+          // Direct URL — no upload needed
+          imgUrl = urlInput;
+        }
+
+        const productData = { 
+          name, 
+          img: imgUrl, 
+          price, 
+          old_price: oldPrice, 
+          description: desc, 
+          pack_items: packItems 
+        };
+        if(id && id !== '') productData.id = id;
+
+        await upsertProduct(productData);
+        await loadData();
+        showToast('✅ Product saved and published!', 'success');
+        closeProductForm();
+      } catch(err) {
+        console.error('saveProduct error:', err);
+        showToast('❌ Failed: ' + (err.message || 'Check Supabase tables & Storage bucket'), 'error');
+      } finally {
+        saveBtn.textContent = 'Save Product Details';
+        saveBtn.disabled = false;
+      }
+    }
+
+    async function deleteProduct(id) {
+      if(confirm('Are you sure you want to remove this product?')) {
+        try {
+          await deleteProductSupabase(id);
+          await loadData();
+          showToast('Product removed', 'success');
+        } catch(err) {
+          console.error(err);
+          alert('Failed to delete: ' + (err.message || JSON.stringify(err)));
+          showToast('Failed to delete product', 'error');
+        }
+      }
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast show ' + type;
+      setTimeout(() => { toast.className = 'toast'; }, 3500);
+    }
+
+
+    // -- Image Input Helpers --
+    function switchImgTab(tab) {
+      const isUpload = tab === 'upload';
+      document.getElementById('imgPanelUpload').style.display = isUpload ? 'block' : 'none';
+      document.getElementById('imgPanelUrl').style.display   = isUpload ? 'none'  : 'block';
+      const onStyle  = 'flex:1;padding:8px;border-radius:8px;border:2px solid #111;background:#111;color:#fff;font-weight:600;cursor:pointer;font-size:0.85rem;';
+      const offStyle = 'flex:1;padding:8px;border-radius:8px;border:2px solid #ddd;background:#fff;color:#666;font-weight:600;cursor:pointer;font-size:0.85rem;';
+      document.getElementById('tabUpload').style.cssText = isUpload ? onStyle : offStyle;
+      document.getElementById('tabUrl').style.cssText    = isUpload ? offStyle : onStyle;
+    }
+
+    function onFileChange(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => showImgPreview(e.target.result);
+        reader.readAsDataURL(input.files[0]);
+        document.getElementById('prodImgUrl').value = '';
+      }
+    }
+
+    function onUrlChange(url) {
+      if (url && url.startsWith('http')) {
+        showImgPreview(url);
+        document.getElementById('prodImgFile').value = '';
+      } else if (!url) {
+        document.getElementById('imgPreviewWrap').style.display = 'none';
+      }
+    }
+
+    function showImgPreview(src) {
+      document.getElementById('prodImgPreview').src = src;
+      document.getElementById('imgPreviewWrap').style.display = 'block';
+    }
+
+    function clearImage() {
+      document.getElementById('prodImgFile').value  = '';
+      document.getElementById('prodImgUrl').value   = '';
+      document.getElementById('prodImgBase64').value = '';
+      document.getElementById('prodImgPreview').src  = '';
+      document.getElementById('imgPreviewWrap').style.display = 'none';
+    }
+    // Initialize View — wait for DOM to be fully ready
+    document.addEventListener('DOMContentLoaded', () => { loadData(); });
+    // Also call directly in case DOMContentLoaded already fired
+    if (document.readyState !== 'loading') loadData();
+
+  </script>
+
+</body>
+</html>
