@@ -943,16 +943,14 @@
 
     /* Offer Banner */
     .offer-banner {
-      padding: 10px 15px;
-      gap: 8px;
+      padding: 12px 15px;
+      gap: 10px;
     }
     .offer-text {
       font-size: 0.8rem;
       text-align: center;
-      line-height: 1.3;
-    }
-    .hide-mobile {
-      display: none;
+      line-height: 1.4;
+      margin: 0 auto;
     }
     .progress-container {
       height: 6px;
@@ -1399,7 +1397,7 @@
       const percentage = (remainingDays / totalDays) * 100;
       progressBar.style.width = percentage + '%';
       
-      offerText.innerHTML = `✨ <strong>Offre Spéciale :</strong> <span class="hide-mobile">Ne manquez pas cette occasion. </span>Plus que <strong>${remainingDays} jours</strong><span class="hide-mobile"> sur ${totalDays} pour obtenir vos essentiels de beauté</span> !`;
+      offerText.innerHTML = `✨ <strong>Offre Spéciale :</strong> Ne manquez pas cette occasion. Plus que <strong>${remainingDays} jours</strong> sur ${totalDays} pour obtenir vos essentiels de beauté !`;
     }
 
     // Initialize
