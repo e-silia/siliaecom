@@ -191,20 +191,20 @@
       letter-spacing: -0.02em;
     }
     .price-was {
-      font-size: 1.4rem;
+      font-size: 2rem;
       text-decoration: line-through;
       color: #999;
       margin-bottom: 6px;
-      font-weight: 500;
+      font-weight: 600;
     }
     .savings-badge {
       display: inline-block;
       background: rgba(76, 175, 80, 0.1);
       color: var(--success-green);
-      padding: 8px 18px;
+      padding: 10px 22px;
       border-radius: 20px;
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: 1.3rem;
+      font-weight: 800;
       letter-spacing: 0.02em;
     }
 
@@ -366,7 +366,7 @@
       h1 { font-size: 2rem; margin-bottom: 10px; }
       .pricing-block { padding: 20px; margin-bottom: 30px; border-radius: 20px; }
       .price-now { font-size: 2.5rem; }
-      .price-was { font-size: 1.2rem; }
+      .price-was { font-size: 1.8rem; }
       
       .included-item { padding: 15px; gap: 12px; border-radius: 15px; }
       .included-item img { width: 50px; height: 50px; border-radius: 10px; }
@@ -631,7 +631,7 @@
                 <p>${shortDesc}</p>
               </div>
               <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                ${priceVal ? `<span style="text-decoration:line-through; color:#999; font-size:0.85rem; margin-bottom:4px;">${priceVal} MAD</span>` : ''}
+                ${priceVal ? `<span style="text-decoration:line-through; color:#999; font-size:1.3rem; margin-bottom:4px; font-weight: 600;">${priceVal} MAD</span>` : ''}
                 <span class="click-hint">Details</span>
               </div>
             </div>
