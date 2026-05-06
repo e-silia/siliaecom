@@ -10,8 +10,11 @@
   <meta property="og:url" content="https://e-silia.github.io/SILIA/pack.html">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabaseClient.js"></script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://xudfzohnlxaukzziyyrl.supabase.co">
+<link rel="dns-prefetch" href="https://xudfzohnlxaukzziyyrl.supabase.co">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin></script>
+<script src="assets/js/supabaseClient.js"></script>
   <style>
     /* Premium CSS Variables */
     :root {
@@ -179,33 +182,46 @@
     }
     .price-row {
       display: flex;
-      align-items: flex-end;
-      gap: 20px;
+      align-items: center;
+      gap: 24px;
       margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .price-now-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
     }
     .price-now {
-      font-size: 3rem;
+      font-size: 2.5rem;
       font-weight: 800;
       color: #111;
       line-height: 1;
       letter-spacing: -0.02em;
     }
     .price-was {
-      font-size: 1.4rem;
+      font-size: 3.8rem;
       text-decoration: line-through;
+      text-decoration-color: var(--offer-highlight);
+      text-decoration-thickness: 6px;
       color: #999;
-      margin-bottom: 6px;
-      font-weight: 500;
+      margin-bottom: 2px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
     .savings-badge {
       display: inline-block;
-      background: rgba(76, 175, 80, 0.1);
-      color: var(--success-green);
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-size: 1rem;
-      font-weight: 700;
+      background: linear-gradient(270deg, #ff4d4f, #ff7875, #ff6b35, #ff4d4f);
+      background-size: 300% auto;
+      color: #fff;
+      padding: 12px 32px;
+      border-radius: 50px;
+      font-size: 2.2rem;
+      font-weight: 900;
       letter-spacing: 0.02em;
+      margin-top: 10px;
+      animation: discountPulse 1.4s ease-in-out infinite, discountShimmer 2.5s linear infinite;
     }
 
     /* Description */
@@ -348,10 +364,33 @@
     .modal-title { font-size: 1.8rem; font-weight: 700; margin: 0 0 10px 0; color: #111; }
     .modal-desc { font-size: 1.05rem; color: #666; margin: 0 0 25px 0; line-height: 1.5; }
     .modal-price-box {
-      background: #f5f5f7; border-radius: 20px; padding: 15px; display: inline-block;
+      background: #f5f5f7; border-radius: 20px; padding: 20px 15px; display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; width: 100%; box-sizing: border-box; flex-direction: column;
     }
-    .modal-price-label { font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 5px; display: block; }
-    .modal-price { font-size: 1.5rem; font-weight: 700; color: #999; text-decoration: line-through; }
+    .modal-prices-row {
+      display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;
+    }
+    .modal-price { font-size: 1.8rem; font-weight: 800; color: #999; text-decoration: line-through; text-decoration-color: var(--offer-highlight); text-decoration-thickness: 4px; }
+    .modal-price-new { font-size: 2rem; font-weight: 900; color: #111; }
+    @keyframes discountPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 6px 20px rgba(255,77,79,0.35); }
+      50% { transform: scale(1.06); box-shadow: 0 10px 35px rgba(255,77,79,0.6); }
+    }
+    @keyframes discountShimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .modal-discount {
+      background: linear-gradient(270deg, #ff4d4f, #ff7875, #ff6b35, #ff4d4f);
+      background-size: 300% auto;
+      color: #fff;
+      padding: 12px 30px;
+      border-radius: 50px;
+      font-size: 2.2rem;
+      font-weight: 900;
+      display: inline-block;
+      letter-spacing: 0.02em;
+      animation: discountPulse 1.4s ease-in-out infinite, discountShimmer 2.5s linear infinite;
+    }
 
     /* Mobile */
     @media (max-width: 900px) {
@@ -365,8 +404,8 @@
       
       h1 { font-size: 2rem; margin-bottom: 10px; }
       .pricing-block { padding: 20px; margin-bottom: 30px; border-radius: 20px; }
-      .price-now { font-size: 2.5rem; }
-      .price-was { font-size: 1.2rem; }
+      .price-now { font-size: 1.8rem; }
+      .price-was { font-size: 2.5rem; text-decoration-thickness: 3px; }
       
       .included-item { padding: 15px; gap: 12px; border-radius: 15px; }
       .included-item img { width: 50px; height: 50px; border-radius: 10px; }
@@ -433,6 +472,24 @@
       100% { background-position: 1000px 0; }
     }
 
+    /* Image shimmer placeholder */
+    .img-shimmer {
+      width: 100%; height: 100%;
+      background: #e8e8e8;
+      background-image: linear-gradient(90deg, #e8e8e8 0px, #f4f4f4 150px, #e8e8e8 300px);
+      background-size: 1000px 100%;
+      animation: shimmerLine 2s infinite linear;
+      border-radius: inherit;
+    }
+    .thumb-shimmer {
+      width: 100%; height: 100%;
+      background: #e8e8e8;
+      background-image: linear-gradient(90deg, #e8e8e8 0px, #f4f4f4 150px, #e8e8e8 300px);
+      background-size: 1000px 100%;
+      animation: shimmerLine 2s infinite linear;
+      border-radius: 12px;
+    }
+
     @media (max-width: 900px) {
       .shimmer-pack-container { flex-direction: column; gap: 40px; margin-top: 30px; }
       .shimmer-pack-left { width: 100%; }
@@ -484,8 +541,9 @@
     
     <!-- Left Gallery -->
     <div class="product-gallery">
-      <div class="main-image">
-        <img id="productImg" src="assets/img/serum.png" alt="Product">
+      <div class="main-image" id="mainImageWrap">
+        <div class="img-shimmer" id="productImgShimmer"></div>
+        <img id="productImg" src="" alt="Product" style="display:none;">
       </div>
       <div class="thumbnail-gallery" id="thumbGallery">
         <!-- Thumbnails will be injected here -->
@@ -500,10 +558,12 @@
       <!-- Pricing Block -->
       <div class="pricing-block">
         <div class="price-row">
-          <div class="price-now" id="productPriceNew">— MAD</div>
+          <div class="price-now-group">
+            <div class="price-now" id="productPriceNew">— MAD</div>
+            <div class="savings-badge" id="productSavings" style="display:none"></div>
+          </div>
           <div class="price-was" id="productPriceOld" style="display:none"></div>
         </div>
-        <div class="savings-badge" id="productSavings" style="display:none"></div>
       </div>
 
       <!-- Description -->
@@ -535,20 +595,17 @@
       <h3 class="modal-title" id="modalTitle">Product Title</h3>
       <p class="modal-desc" id="modalDesc">Product description goes here.</p>
       <div class="modal-price-box">
-        <span class="modal-price-label">Prix Original</span>
-        <span class="modal-price" id="modalPrice">0 MAD</span>
+        <div class="modal-prices-row">
+          <span class="modal-price" id="modalOldPrice">0 MAD</span>
+          <span class="modal-price-new" id="modalNewPrice">0 MAD</span>
+        </div>
+        <span class="modal-discount" id="modalDiscount">-70%</span>
       </div>
     </div>
   </div>
 
   <script>
-    // Hide Shimmer Loader
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        const preloader = document.getElementById('preloader');
-        if(preloader) { preloader.style.opacity = '0'; preloader.style.visibility = 'hidden'; }
-      }, 800);
-    });
+    // Preloader is now hidden by loadProduct() once data is ready
 
     let currentProduct = null;
 
@@ -576,7 +633,13 @@
         document.title = data.name + ' - SILIA';
 
         // Update image
-        if (data.img) document.getElementById('productImg').src = data.img;
+        const imgEl = document.getElementById('productImg');
+        const shimmerEl = document.getElementById('productImgShimmer');
+        if (data.img) {
+          imgEl.src = data.img;
+          imgEl.style.display = 'block';
+          if (shimmerEl) shimmerEl.style.display = 'none';
+        }
 
         // Update text
         document.getElementById('productBadge').textContent = data.name;
@@ -597,8 +660,8 @@
         if (saved > 0) {
           const pct = Math.round(saved / oldP * 100);
           const savEl = document.getElementById('productSavings');
-          savEl.textContent = `🔥 Vous économisez ${saved} MAD (-${pct}%)`;
-          savEl.style.display = 'block';
+          savEl.textContent = `-${pct}%`;
+          savEl.style.display = 'inline-block';
         }
 
         // Update buttons
@@ -616,22 +679,30 @@
             const shortDesc = words.length > 6 ? words.slice(0, 6).join(' ') + '...' : desc;
             const priceVal = item.oldPrice || item.old_price;
             const priceText = priceVal ? priceVal + ' MAD' : '';
-            const img = item.img || 'assets/img/serum.png';
+            // Always calculate sale price as old_price - 70%
+            const newPriceVal = priceVal ? Math.round(priceVal * 0.30) : (item.price || 0);
+            const newPriceText = newPriceVal ? newPriceVal + ' MAD' : '';
+            const discountStr = priceVal ? '-70%' : '';
+            const img = item.img || '';
             
             // Encode single quotes for onclick attribute
             const safeTitle = (item.title || '').replace(/'/g, "\\'");
             const safeDesc = desc.replace(/'/g, "\\'");
-            const safePrice = priceText.replace(/'/g, "\\'");
+            const safeOldPrice = priceText.replace(/'/g, "\\'");
+            const safeNewPrice = newPriceText.replace(/'/g, "\\'");
 
             return `
-            <div class="included-item" onclick="openModal('${img}', '${safeTitle}', '${safeDesc}', '${safePrice}')">
-              <img src="${img}" alt="${safeTitle}">
+            <div class="included-item" onclick="openModal('${img}', '${safeTitle}', '${safeDesc}', '${safeOldPrice}', '${safeNewPrice}', '${discountStr}')">
+              ${img
+                ? `<img src="${img}" alt="${safeTitle}">`
+                : `<div class="thumb-shimmer" style="width:60px;height:60px;flex-shrink:0;"></div>`
+              }
               <div>
                 <h4>${item.title || ''}</h4>
                 <p>${shortDesc}</p>
               </div>
               <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                ${priceVal ? `<span style="text-decoration:line-through; color:#999; font-size:0.85rem; margin-bottom:4px;">${priceVal} MAD</span>` : ''}
+                ${priceVal ? `<span style="text-decoration:line-through; text-decoration-color: var(--offer-highlight); text-decoration-thickness: 2px; color:#999; font-size:1.1rem; font-weight:700; margin-bottom:4px;">${priceVal} MAD</span>` : ''}
                 <span class="click-hint">Details</span>
               </div>
             </div>
@@ -640,20 +711,17 @@
 
           // Render Thumbnails under the main image
           const thumbGallery = document.getElementById('thumbGallery');
-          const mainImgSrc = data.img || 'assets/img/serum.png';
-          let thumbsHtml = `
-            <div class="thumb-item active" onclick="swapImage('${mainImgSrc}', this)">
-              <img src="${mainImgSrc}" alt="Main Product">
-            </div>
-          `;
+          const mainImgSrc = data.img || '';
+          let thumbsHtml = mainImgSrc
+            ? `<div class="thumb-item active" onclick="swapImage('${mainImgSrc}', this)"><img src="${mainImgSrc}" alt="Main Product"></div>`
+            : `<div class="thumb-item active"><div class="thumb-shimmer"></div></div>`;
+
           thumbsHtml += packItems.map(item => {
-            const img = item.img || 'assets/img/serum.png';
+            const img = item.img || '';
             const safeTitle = (item.title || '').replace(/'/g, "\\'");
-            return `
-              <div class="thumb-item" onclick="swapImage('${img}', this)">
-                <img src="${img}" alt="${safeTitle}">
-              </div>
-            `;
+            return img
+              ? `<div class="thumb-item" onclick="swapImage('${img}', this)"><img src="${img}" alt="${safeTitle}"></div>`
+              : `<div class="thumb-item"><div class="thumb-shimmer"></div></div>`;
           }).join('');
           thumbGallery.innerHTML = thumbsHtml;
         }
@@ -662,6 +730,10 @@
         document.getElementById('productTitle').textContent = 'Produit introuvable';
         document.getElementById('productDesc').textContent = err.message;
         document.getElementById('productBadge').textContent = 'Erreur';
+      } finally {
+        // Always hide the preloader once done, success or failure
+        const preloader = document.getElementById('preloader');
+        if (preloader) { preloader.style.opacity = '0'; preloader.style.visibility = 'hidden'; }
       }
     }
 
@@ -695,11 +767,24 @@
 
     // Modal Logic
     const modal = document.getElementById('productModal');
-    function openModal(imgSrc, title, desc, price) {
+    function openModal(imgSrc, title, desc, oldPrice, newPrice, discount) {
       document.getElementById('modalImg').src = imgSrc;
       document.getElementById('modalTitle').textContent = title;
       document.getElementById('modalDesc').textContent = desc;
-      document.getElementById('modalPrice').textContent = price;
+      
+      const oldPriceEl = document.getElementById('modalOldPrice');
+      const newPriceEl = document.getElementById('modalNewPrice');
+      const discountEl = document.getElementById('modalDiscount');
+      
+      oldPriceEl.textContent = oldPrice;
+      oldPriceEl.style.display = oldPrice ? 'inline' : 'none';
+      
+      newPriceEl.textContent = newPrice;
+      newPriceEl.style.display = newPrice ? 'inline' : 'none';
+      
+      discountEl.textContent = discount;
+      discountEl.style.display = discount ? 'inline-block' : 'none';
+
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
     }
